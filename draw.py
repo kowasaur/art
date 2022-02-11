@@ -1,10 +1,9 @@
-# TODO: Start with big brush
-
 # Make a shortcut to open the foreground colour picker with ?
 # Select brush tool
-# Set brush size to 10
+# Set brush size to 300
 # Set smoothing to 0%
-# Open blank 1000 x 1000 document
+# Set brush hardness to 100%
+# Make a new blank document
 
 from random import randint
 from typing import Literal
@@ -13,25 +12,27 @@ from pynput.keyboard import Controller, Key
 import pyautogui
 
 TIME = 0.3 # time it takes to move cursor
+DO_DIAGONALS = True
 
 # number of pixels moved by arrow keys
 # also the width of the brush
-width = 10
+width = 300
 keyboard = Controller()
 max_x = max_y = min_x = min_y = None
 
-def increase_width():
+def decrease_width():
+    keyboard.type("[")
     global width
-    if width < 10:
-        width += 1
-    elif width < 50:
-        width += 5
-    elif width < 100:
-        width += 10
-    elif width < 200:
-        width += 25
-    else:
-        raise Exception("increase_width not sufficient")
+    if width > 200:
+        width -= 50
+    elif width > 100:
+        width -= 25
+    elif width > 50:
+        width -= 10
+    elif width > 10:
+        width -= 5
+    elif width > 5:
+        width -= 1
 
 def rand_colour():
     keyboard.type("?")
@@ -43,7 +44,10 @@ def rand_colour():
 def move_random():
     x = randint(min_x, max_x)
     y = randint(min_y, max_y)
-    pyautogui.moveTo(x, y, duration = TIME)
+    if DO_DIAGONALS:
+        pyautogui.dragTo(x, y, duration = TIME)
+    else:
+        pyautogui.moveTo(x, y, duration = TIME)
 
 def drag(x: Literal[-1, 0, 1], y: Literal[-1, 0, 1]):
     pyautogui.dragRel(x * width * 2, y * width * 2, duration = TIME)
@@ -97,8 +101,7 @@ for key in keys:
             rand_colour()
             move_random()
         case "'c'":
-            keyboard.type("]")
-            increase_width()
+            decrease_width()
             move_random()
         case _:
             raise Exception("Unknown key: " + key.strip())
